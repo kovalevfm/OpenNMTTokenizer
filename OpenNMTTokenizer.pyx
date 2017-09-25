@@ -8,7 +8,7 @@ cdef extern from "Tokenizer/include/onmt/Tokenizer.h" namespace "onmt":
         cppclass Mode:
             Mode() except +
         CTokenizer(Mode mode, string bpe_model_path, bool case_feature, bool joiner_annotate,
-                  bool joiner_new, string joiner, bool with_separators) except +
+                  bool joiner_new, string joiner, bool with_separators, bool segment_case) except +
         CTokenizer(bool case_feature, string joiner) except +
         void tokenize(string text, vector[string] words, vector[vector[string]] features)
         string detokenize(vector[string] words, vector[vector[string]] features)
@@ -25,7 +25,7 @@ cdef extern from "Tokenizer/include/onmt/Tokenizer.h" namespace "onmt::Tokenizer
 cdef class Tokenizer:
     cdef CTokenizer* c_tokenizer
     def __cinit__(self, mode=None, bpe_model_path=None, case_feature=None, joiner_annotate=None,
-                  joiner_new=None, joiner=None, with_separators=None):
+                  joiner_new=None, joiner=None, with_separators=None, segment_case=None):
         if mode and mode not in ("conservative", "aggressive"):
             raise Exception("mode has to be conservative or aggressive")
         cdef CTokenizer.Mode c_mode = Conservative if (not mode or mode == "conservative") else Aggressive
@@ -35,8 +35,9 @@ cdef class Tokenizer:
         cdef bool c_joiner_new = joiner_new or False
         cdef string c_joiner = joiner or joiner_marker
         cdef bool c_with_separators = with_separators or False
+        cdef bool c_segment_case = segment_case or False
         self.c_tokenizer = new CTokenizer(c_mode, c_bpe_model_path, c_case_feature, c_joiner_annotate,
-                                         c_joiner_new, c_joiner, c_with_separators)
+                                         c_joiner_new, c_joiner, c_with_separators, c_segment_case)
     def tokenize(self, text):
         cdef vector[string] c_words
         cdef vector[vector[string]] c_features

@@ -38,14 +38,21 @@ cdef class Tokenizer:
         cdef bool c_segment_case = segment_case or False
         self.c_tokenizer = new CTokenizer(c_mode, c_bpe_model_path, c_case_feature, c_joiner_annotate,
                                          c_joiner_new, c_joiner, c_with_separators, c_segment_case)
+
     def tokenize(self, text):
+        c_words, c_features= self.tokenize_with_features(text)
+        return c_words
+
+    def tokenize_with_features(self, text):
         cdef vector[string] c_words
         cdef vector[vector[string]] c_features
         self.c_tokenizer.tokenize(text, c_words, c_features)
         return c_words, c_features
+
     def detokenize(self, words, features):
         cdef vector[string] c_words = words
         cdef vector[vector[string]] c_features = features
         cdef string text
         text = self.c_tokenizer.detokenize(c_words, c_features)
         return text
+
